@@ -1,26 +1,27 @@
 #include "calculator.h"
 
+#include <string>
 #include <iostream>
 #include <format>
 #include <cmath>
 
-Number Plus(Number a, Number b) {
+Number DoPlus(Number a, Number b) {
     return a + b;
 }
 
-Number Minus(Number a, Number b) {
+Number DoMinus(Number a, Number b) {
     return a - b;
 }
 
-Number Multiply(Number a, Number b) {
+Number DoMultiply(Number a, Number b) {
     return a * b;
 }
 
-Number Divide(Number a, Number b) {
+Number DoDivide(Number a, Number b) {
     return a / b;
 }
 
-Number Degree(Number a, Number b) {
+Number DoDegree(Number a, Number b) {
     return std::pow(a, b);
 }
 
@@ -32,15 +33,17 @@ void LoadMemory(Number& number, Number mem) {
     number = mem;
 }
 
-void printResult(Number number) {
+void PrintResult(Number number) {
     std::cout << number << std::endl;
 }
 
+// Возвращает true, если удалось прочитать число
+// и сохранить его в Number.
 bool ReadNumber(Number& result) {
-    std::string tmp;
-    std::cin >> tmp;
+    std::string buff_str;
+    std::cin >> buff_str;
     try {
-        result = std::stod(tmp);
+        result = std::stod(buff_str);
         return true;
     } catch (...) {
         std::cerr << "Error: Numeric operand expected" << std::endl;
@@ -48,6 +51,8 @@ bool ReadNumber(Number& result) {
     }
 }
 
+// Возвращает true, если удалось прочитать число из строки str
+// и сохранить его в Number.
 bool ReadNumber(Number& result, std::string str) {
     try {
         result = std::stod(str);
@@ -58,50 +63,65 @@ bool ReadNumber(Number& result, std::string str) {
     }
 }
 
-
-
 bool RunCalculatorCycle() {
-    Number number, mem, tmpNumber;
-    bool isMemoryEmpty = true;
+    Number number = 0;
+    Number mem = 0;
+    Number tmp_number = 0;
+    bool is_memory_empty = true;
 
-    if (!ReadNumber(number)) return false;
+    if (!ReadNumber(number)) {
+        return false;
+    }
 
-    std::string tmp, tmp2;
+    std::string buff_str;
+    std::string buff_str2;
     for (;true;) {
-        std::cin >> tmp;
-        if (tmp == "q") {
+        std::cin >> buff_str;
+        if (buff_str == "q") {
             return true;
         }
-        else if (tmp == "+" ||
-                tmp == "-" ||
-                tmp == "*" ||
-                tmp == "/" ||
-                tmp == ":" ||
-                tmp == "**") {
-            std::cin >> tmp2;
-            if (!ReadNumber(tmpNumber, tmp2)) {
+        else if (buff_str == "+" ||
+                buff_str == "-" ||
+                buff_str == "*" ||
+                buff_str == "/" ||
+                buff_str == ":" ||
+                buff_str == "**") {
+            std::cin >> buff_str2;
+            if (!ReadNumber(tmp_number, buff_str2)) {
                 return false;
             }
             
-            if (tmp == "+") number = Plus(number, tmpNumber);
-            else if (tmp == "-") number = Minus(number, tmpNumber);
-            else if (tmp == "*") number = Multiply(number, tmpNumber);
-            else if (tmp == "/") number = Divide(number, tmpNumber);
-            else if (tmp == "**") number = Degree(number, tmpNumber);
-            else number = tmpNumber;
+            if (buff_str == "+") {
+                number = DoPlus(number, tmp_number);
+            }
+            else if (buff_str == "-") {
+                number = DoMinus(number, tmp_number);
+            }
+            else if (buff_str == "*") {
+                number = DoMultiply(number, tmp_number);
+            }
+            else if (buff_str == "/") {
+                number = DoDivide(number, tmp_number);
+            }
+            else if (buff_str == "**") {
+                number = DoDegree(number, tmp_number);
+            }
+            else {
+                number = tmp_number;
+            }
         }
-        else if (tmp == "=") {
+        else if (buff_str == "=") {
             printResult(number);
         }
-        else if (tmp == "c") {
+        else if (buff_str == "c") {
             number = 0;
         }
-        else if (tmp == "s") {
+        else if (buff_str == "s") {
             SaveMemory(number, mem);
-            isMemoryEmpty = false;            
+            is_memory_empty = false;            
         }
-        else if (tmp == "l") {
-            if (!isMemoryEmpty) {
+        else if (buff_str == "l") {
+            if (!is_memory_empty) {
                 LoadMemory(number, mem);
             }
             else {
@@ -110,7 +130,7 @@ bool RunCalculatorCycle() {
             }
         }
         else {
-            std::cerr << "Error: Unknown token " << tmp << std::endl;
+            std::cerr << "Error: Unknown token " << buff_str << std::endl;
             return false;
         }
     }
